@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/asalani93/node-flakeless"
+    "url": "git://github.com/makeomatic/node-flakeless"
   },
   "author": "Anthony Salani (https://github.com/asalani93)",
   "license": "MIT",

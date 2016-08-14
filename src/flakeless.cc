@@ -42,8 +42,8 @@ const char alpha64[64] = {
 
 Flakeless::Flakeless(double epochStart, double workerID, FlakelessOutput outputType) :
   counter_(0),
-  epochStart_(static_cast<std::uint64_t>(epochStart)),
-  workerID_(static_cast<std::uint64_t>(workerID)),
+  epochStart_(static_cast<uint64_t>(epochStart)),
+  workerID_(static_cast<uint64_t>(workerID)),
   outputType_(outputType)
 {
   lastTime_ = duration_cast<milliseconds>(
@@ -132,9 +132,9 @@ void Flakeless::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 
 void Flakeless::Next(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   // Some masks used for bit twiddling at the penultimate step.
-  const std::uint64_t timestampMask = 0x1ffffffffff;
-  const std::uint64_t workerMask = 0x3ff;
-  const std::uint64_t counterMask = 0xfff;
+  const uint64_t timestampMask = 0x1ffffffffff;
+  const uint64_t workerMask = 0x3ff;
+  const uint64_t counterMask = 0xfff;
 
   // How much to shift each of the fields by.
   const int timestampShift = 22;
@@ -146,7 +146,7 @@ void Flakeless::Next(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   Flakeless* obj = ObjectWrap::Unwrap<Flakeless>(info.Holder());
 
   // Get the current time, minus the start of the epoch.
-  std::uint64_t currTime = duration_cast<milliseconds>(
+  uint64_t currTime = duration_cast<milliseconds>(
     system_clock::now().time_since_epoch()
   ).count() - obj->epochStart_;
 
@@ -170,10 +170,10 @@ void Flakeless::Next(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   }
 
   // Doing that bit twiddling to construct the final basiclaly-unique ID.
-  std::uint64_t timestampBits = (currTime & timestampMask) << timestampShift;
-  std::uint64_t workerBits = (obj->workerID_ & workerMask) << workerShift;
-  std::uint64_t counterBits = (obj->counter_ & counterMask) << counterShift;
-  std::uint64_t finalBits = timestampBits | workerBits | counterBits;
+  uint64_t timestampBits = (currTime & timestampMask) << timestampShift;
+  uint64_t workerBits = (obj->workerID_ & workerMask) << workerShift;
+  uint64_t counterBits = (obj->counter_ & counterMask) << counterShift;
+  uint64_t finalBits = timestampBits | workerBits | counterBits;
 
   // Convert the uint64_t value to a string that JS can actually use.
   if (obj->outputType_ == FlakelessOutput::Base10) {
@@ -185,7 +185,7 @@ void Flakeless::Next(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   } else if (obj->outputType_ == FlakelessOutput::Base64) {
     // Encoding the resulting 64 bit integer as a base 64 number stored in a string.
     // Leading zeros are preserved.
-    const std::uint64_t base64Mask = 0x3f;
+    const uint64_t base64Mask = 0x3f;
     char buff[12];
     for (int i = 10; i >= 0; --i) {
       uint slice = finalBits & base64Mask;
@@ -197,7 +197,7 @@ void Flakeless::Next(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   } else {
     // Encoding the resulting 64 bit integer as a base 16 number stored in a string.
     // Leading zeros are preserved.
-    const std::uint64_t base16Mask = 0xf;
+    const uint64_t base16Mask = 0xf;
     char buff[17];
     for (int i = 15; i >= 0; --i) {
       uint slice = finalBits & base16Mask;

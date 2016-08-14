@@ -11,10 +11,10 @@ enum class FlakelessOutput {
 
 class Flakeless : public Nan::ObjectWrap {
 
-  std::uint64_t counter_;
-  std::uint64_t epochStart_;
-  std::uint64_t lastTime_;
-  std::uint64_t workerID_;
+  uint64_t counter_;
+  uint64_t epochStart_;
+  uint64_t lastTime_;
+  uint64_t workerID_;
   FlakelessOutput outputType_;
 
 public:

@@ -1,6 +1,6 @@
 {
   "name": "ms-flakeless",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Generates unique IDs from timestamps",
   "main": "index.js",
   "keywords": [
@@ -15,7 +15,8 @@
   ],
   "scripts": {
     "pretest": "node_modules/.bin/eslint .",
-    "test": "./node_modules/.bin/mocha"
+    "test": "./node_modules/.bin/mocha",
+    "install": "node-gyp rebuild"
   },
   "repository": {
     "type": "git",

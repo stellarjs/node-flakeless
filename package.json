@@ -1,17 +1,13 @@
 {
   "name": "ms-flakeless",
-  "version": "3.0.1",
+  "version": "4.0.0",
   "description": "Generates unique IDs from timestamps",
-  "main": "index.js",
+  "main": "lib/flakeless.js",
   "keywords": [
     "snowflake",
     "flakeless",
     "unique",
-    "id",
-    "ticket",
-    "client",
-    "server",
-    "distributed"
+    "id"
   ],
   "scripts": {
     "pretest": "node_modules/.bin/eslint .",
@@ -34,8 +30,5 @@
   },
   "dependencies": {
     "nan": "^2.4.0"
-  },
-  "peerDependencies": {
-    "socket.io": "^1.4.8"
   }
 }

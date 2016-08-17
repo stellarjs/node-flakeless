@@ -1,6 +1,6 @@
 {
   "name": "ms-flakeless",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Generates unique IDs from timestamps",
   "main": "lib/flakeless.js",
   "keywords": [

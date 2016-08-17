@@ -9,8 +9,7 @@
       '<!(node -e "require(\'nan\')")'
     ],
     'cflags': [
-      '-std=c++11',
-      '-stdlib=libc++'
+      '-std=c++11'
     ],
     'xcode_settings': {
       'OTHER_CFLAGS': [

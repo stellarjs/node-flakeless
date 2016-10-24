@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('chai').assert;
-const Flakeless = require('..').Flakeless;
+const Flakeless = require('..');
 
 describe('Flakeless base10 output', function() {
   it('is an object', function() {

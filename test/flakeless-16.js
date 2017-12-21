@@ -79,9 +79,28 @@ describe('Flakeless base16 output', function() {
       workerID: 0x3ff
     });
 
-    const id = parseInt(flakeless.next(), 16);
+    const strId = flakeless.next();
+    const id = parseInt(strId, 16);
+    const time = id >> 22;
 
-    assert.isAtLeast(id >> 22, 100);
+    assert.isAtLeast(time, 100);
+    assert.isAtMost(time, 110);
+  });
+
+  it('has an encoded timestamp for workerIdNumBits = 16', function() {
+    const flakeless = new Flakeless({
+      epochStart: Date.now() - 100,
+      outputType: 'base16',
+      workerID: 0x3ff,
+      workerIDNumBits: 16
+    });
+
+    const id = flakeless.next();
+    console.log(id);
+    const time = parseInt(id.substr(0, 9), 16);
+
+    assert.isAtLeast(time, 100);
+    assert.isAtMost(time, 110);
   });
 
   it('has an encoded worker ID', function() {

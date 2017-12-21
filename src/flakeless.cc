@@ -40,7 +40,9 @@ const char alpha64[64] = {
   'w', 'x', 'y', 'z'
 };
 
-Flakeless::Flakeless(double epochStart, double workerID, FlakelessOutput outputType) :
+const uint64_t numBits = 63;
+
+Flakeless::Flakeless(double epochStart, double workerID, double workerIDNumBits, FlakelessOutput outputType) :
   counter_(0),
   epochStart_(static_cast<uint64_t>(epochStart)),
   workerID_(static_cast<uint64_t>(workerID)),
@@ -49,6 +51,20 @@ Flakeless::Flakeless(double epochStart, double workerID, FlakelessOutput outputT
   lastTime_ = duration_cast<milliseconds>(
     system_clock::now().time_since_epoch()
   ).count() - epochStart_;
+
+  const uint64_t numCounterBits = 12;
+  const uint64_t numWorkerBits = static_cast<uint64_t>(workerIDNumBits);
+  const uint64_t numTimestampBits = numBits - (numCounterBits + numWorkerBits);
+
+  // Some masks used for bit twiddling at the penultimate step.
+  timestampMask_ = (static_cast<uint64_t>(1) << (numTimestampBits)) - 1;
+  workerMask_ = (static_cast<uint64_t>(1) << (numWorkerBits)) - 1;
+  counterMask_ = (static_cast<uint64_t>(1) << (numCounterBits)) - 1;
+  
+  // How much to s\hift each of the fields by.
+  timestampShift_ = numCounterBits + numWorkerBits;
+  workerShift_ = numCounterBits;
+  counterShift_ = 0;
 }
 
 Flakeless::~Flakeless() {
@@ -85,11 +101,14 @@ void Flakeless::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
       // Unpack all of the required arguments from the parameters arguments
       auto vEpochStart = opts->Get(Nan::New("epochStart").ToLocalChecked());
       auto vWorkerID = opts->Get(Nan::New("workerID").ToLocalChecked());
+      auto vWorkerIDNumBits = opts->Get(Nan::New("workerIDNumBits").ToLocalChecked());
       auto vOutputType = opts->Get(Nan::New("outputType").ToLocalChecked());
 
       // Provide defaults for the parameters not given.
       double epochStart = vEpochStart->IsNumber() ? vEpochStart->NumberValue() : 0.f;
       double workerID = vWorkerID->IsNumber() ? vWorkerID->NumberValue() : 0.f;
+      double workerIDNumBits = vWorkerIDNumBits->IsNumber() ? vWorkerIDNumBits->NumberValue() : 10;
+
       FlakelessOutput outputType = FlakelessOutput::Base64;
       if (vOutputType->IsString()) {
         std::string s(*v8::String::Utf8Value(vOutputType->ToString()));
@@ -105,7 +124,7 @@ void Flakeless::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
       }
 
       // Construct the actual object
-      obj = new Flakeless(epochStart, workerID, outputType);
+      obj = new Flakeless(epochStart, workerID, workerIDNumBits, outputType);
     } else if (!info[0]->IsUndefined() && !info[0]->IsObject()) {
       // We were given at least one argument, but it's not an object so we don't
       //   really have a use for it, so throw an error.
@@ -113,7 +132,7 @@ void Flakeless::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
       return;
     } else {
       // We weren't given anything, so just use defaults everywhere.
-      obj = new Flakeless(1.f, 2.f, FlakelessOutput::Base64);
+      obj = new Flakeless(1.f, 2.f, 10, FlakelessOutput::Base64);
     }
 
     // Flakeless* obj = new Flakeless();
@@ -131,20 +150,10 @@ void Flakeless::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 }
 
 void Flakeless::Next(const Nan::FunctionCallbackInfo<v8::Value>& info) {
-  // Some masks used for bit twiddling at the penultimate step.
-  const uint64_t timestampMask = 0x1ffffffffff;
-  const uint64_t workerMask = 0x3ff;
-  const uint64_t counterMask = 0xfff;
-
-  // How much to shift each of the fields by.
-  const int timestampShift = 22;
-  const int workerShift = 12;
-  const int counterShift = 0;
-
   // V8 and Node internal stuff
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   Flakeless* obj = ObjectWrap::Unwrap<Flakeless>(info.Holder());
-
+  
   // Get the current time, minus the start of the epoch.
   uint64_t currTime = duration_cast<milliseconds>(
     system_clock::now().time_since_epoch()
@@ -162,7 +171,7 @@ void Flakeless::Next(const Nan::FunctionCallbackInfo<v8::Value>& info) {
     obj->lastTime_ = currTime;
   }
 
-  if (obj->counter_ > counterMask) {
+  if (obj->counter_ > obj->counterMask_) {
     // We've generated too many IDs in this millisecond, so we'll return null to
     //   let the client know that we're out.
     info.GetReturnValue().Set(v8::Null(isolate));
@@ -170,9 +179,9 @@ void Flakeless::Next(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   }
 
   // Doing that bit twiddling to construct the final basiclaly-unique ID.
-  uint64_t timestampBits = (currTime & timestampMask) << timestampShift;
-  uint64_t workerBits = (obj->workerID_ & workerMask) << workerShift;
-  uint64_t counterBits = (obj->counter_ & counterMask) << counterShift;
+  uint64_t timestampBits = (currTime & obj->timestampMask_) << obj->timestampShift_;
+  uint64_t workerBits = (obj->workerID_ & obj->workerMask_) << obj->workerShift_;
+  uint64_t counterBits = (obj->counter_ & obj->counterMask_) << obj->counterShift_;
   uint64_t finalBits = timestampBits | workerBits | counterBits;
 
   // Convert the uint64_t value to a string that JS can actually use.

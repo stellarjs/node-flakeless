@@ -15,6 +15,17 @@ class Flakeless : public Nan::ObjectWrap {
   uint64_t epochStart_;
   uint64_t lastTime_;
   uint64_t workerID_;
+
+  // Some masks used for bit twiddling at the penultimate step.
+  uint64_t timestampMask_;
+  uint64_t workerMask_;
+  uint64_t counterMask_;
+  
+  // How much to s\hift each of the fields by.
+  int timestampShift_;
+  int workerShift_;
+  int counterShift_;
+
   FlakelessOutput outputType_;
 
 public:
@@ -23,7 +34,7 @@ public:
 
 private:
 
-  explicit Flakeless(double epochStart, double workerID, FlakelessOutput outputType);
+  explicit Flakeless(double epochStart, double workerID, double workerIDNumBits, FlakelessOutput outputType);
 
   ~Flakeless();
 

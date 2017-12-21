@@ -64,13 +64,12 @@ describe('Flakeless base10 output', function() {
 
   it('has an encoded timestamp', function() {
     const flakeless = new Flakeless({
-      epochStart: Date.now() - 100,
+      epochStart: Date.now() - 200,
       outputType: 'base10',
       workerID: 0x3ff
     });
 
     const id = flakeless.next();
-
     assert.isAtLeast(id >> 22, 100);
   });
 
@@ -103,6 +102,57 @@ describe('Flakeless base10 output', function() {
       epochStart: Date.now(),
       outputType: 'base10',
       workerID: 0x3ff
+    });
+
+    const id = flakeless.next();
+
+    assert.oneOf(id & 0xfff, [0, 1]);
+  });
+
+  it('has an encoded timestamp for workerIdNumBits = 16', function() {
+    const flakeless = new Flakeless({
+      epochStart: Date.now() - 6,
+      outputType: 'base10',
+      workerID: 0x3ff,
+      workerIDNumBits: 16
+    });
+
+    const id = flakeless.next();
+    assert.isAtLeast(id >> 28, 6);
+  });
+
+  it('has an encoded worker ID for workerIdNumBits = 16', function() {
+    const flakeless = new Flakeless({
+      epochStart: Date.now(),
+      outputType: 'base10',
+      workerID: 34,
+      workerIDNumBits: 16
+    });
+
+    const id = flakeless.next();
+
+    assert.equal((id & 0xffff000) >> 12, 34);
+  });
+
+  it('has a properly sized workerID for workerIdNumBits = 16', function() {
+    const flakeless = new Flakeless({
+      epochStart: Date.now(),
+      outputType: 'base10',
+      workerID: 0xffffffff,
+      workerIDNumBits: 16
+    });
+
+    const id = flakeless.next() >> 12;
+
+    assert.equal(id & 0xffff, 0xffff);
+  });
+
+  it('has an encoded counter for workerIdNumBits = 16', function() {
+    const flakeless = new Flakeless({
+      epochStart: Date.now(),
+      outputType: 'base10',
+      workerID: 0x3ff,
+      workerIDNumBits: 16
     });
 
     const id = flakeless.next();

@@ -1,6 +1,6 @@
 'use strict';
 
-const Flakeless = require('./index').Flakeless;
+const Flakeless = require('./lib/flakeless').Flakeless;
 const FlakelessJs = require('./js-impl');
 const flakelessJs = new FlakelessJs({outputFmt: 'base64'});
 const flakeless10 = new Flakeless({outputType: 'base10'});

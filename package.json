@@ -1,9 +1,10 @@
 {
-  "name": "ms-flakeless",
+  "name": "stellar-flakeless",
   "version": "4.0.1",
   "description": "Generates unique IDs from timestamps",
   "main": "lib/flakeless.js",
   "keywords": [
+    "stellarjs",
     "snowflake",
     "flakeless",
     "unique",
@@ -13,10 +14,10 @@
     "pretest": "node_modules/.bin/eslint .",
     "test": "./node_modules/.bin/mocha",
     "install": "node-gyp rebuild"
-  },
+  },  
   "repository": {
     "type": "git",
-    "url": "git://github.com/makeomatic/node-flakeless"
+    "url": "git://github.com/stellarjs/stellar-flakeless"
   },
   "author": "Anthony Salani (https://github.com/asalani93)",
   "license": "MIT",

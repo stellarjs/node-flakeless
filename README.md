@@ -1,4 +1,4 @@
-Flakeless
+Flakeless for stellar
 =========
 
 Flakeless is a Javascript library and Node.js native addon for computing small, unique IDs for web applications. This is useful when incrementing primary keys are either not available (ex: in Cassandra or Neo4j) or not feasible at your current scale.
